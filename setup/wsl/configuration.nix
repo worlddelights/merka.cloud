@@ -26,6 +26,7 @@
   # Ensure WireGuard kernel module is loaded and tools are available
   boot.kernelModules = [ "wireguard" ];
   environment.systemPackages = [
+    pkgs.kubectl         # Kubernetes command-line tool
     pkgs.wireguard-tools
     pkgs.kubernetes-helm # Helm client
   ];
@@ -38,13 +39,13 @@
     # To make it even more minimal and ready for your custom components,
     # you might want to disable some default k3s add-ons:
     extraFlags = [
-      "--disable=traefik"                 # Disable built-in ingress controller
+      # "--disable=traefik"                 # Disable built-in ingress controller
       "--disable=servicelb"               # Disable built-in Klipper LoadBalancer
       # "--disable=metrics-server"        # Re-enable built-in metrics server
       "--flannel-backend=wireguard-native"  # Use WireGuard for Flannel pod network encryption
       # "--disable=local-storage"         # Re-enable local-path-provisioner for hostPath PVs
-      # "--disable-helm-controller"         # Disable K3s built-in Helm controller
       "--disable-network-policy"          # Disable K3s network policy controller (Flannel doesn't enforce policies)
+      "--write-kubeconfig-mode=0644"      # Set kubeconfig permissions to be readable by user
       "--secrets-encryption"              # Encrypt at rest the secrets of this cluster
     ];
   };

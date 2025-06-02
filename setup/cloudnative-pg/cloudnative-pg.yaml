@@ -1,0 +1,12 @@
+# Instructions from https://cloudnative-pg.io/documentation/current/quickstart/
+
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg1
+  namespace: cnpg
+spec:
+  instances: 2
+
+  storage:
+    size: 1Gi
