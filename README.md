@@ -1,68 +1,45 @@
-# merka.cloud
+# Merka.cloud
 
-Integrated Hyperscaler-Agnostic Cloud
+Merka.cloud is a local-first, multi-device agent platform. This repository is being reorganized as a Bun workspace for its local services and shared protocol, alongside the Cloudflare portal and React Native app.
 
-Visit [Merka.Cloud](https://merka.cloud) to learn more.
+## Workspace
 
-## Ab-Initio (Installation/Setup)
+| Path | Responsibility |
+| --- | --- |
+| `modules/agent-core` | Local orchestration, mesh state, tool dispatch, and dashboard |
+| `modules/inference-service` | Isolated local model inference |
+| `modules/memory-service` | Local indexing and long-term memory |
+| `modules/core` | Shared, versioned protocol types |
+| `apps/portal` | Cloudflare Workers portal scaffold; target is a public cryptographic discovery directory |
+| `apps/mobile` | Expo development-build app with `llama.rn` |
+| `apps/desktop` | Tauri 2 desktop configurator and orchestrator scaffold for local Bun services |
+| `docs/` | Architecture, API/protocol references, and decision records |
+| `infra/` | Existing deployment and infrastructure configuration |
+| `tools/fabric` | Existing Fabric and transcript utilities |
 
-The best way to get started currently is by using [NixOS](https://nixos.org/)
+The desktop app is intended to guide Bun service installation, configure service availability for OS-user profiles, and coordinate updates to the app and services. Extension management is a future capability. The current Tauri 2 scaffold does not yet install or manage services, map profiles, deliver updates, or manage extensions; those operations require an explicit authorization and integrity model.
 
-On Windows - make sure WSL2 is enabled and follow the instructions here: https://github.com/nix-community/NixOS-WSL 
+The shared-computer security model and onboarding flow remain under design in [the desktop-first setup proposal](docs/architecture/desktop-first-setup.md). The desktop shell is a local control plane, not a replacement for the Bun services. It must not treat node or Tailnet membership as profile authorization or receive broad shell/filesystem privileges.
 
-On MacOS - Recommendation is to use OrbStack to add Virtual Machine with NixOS on it: https://docs.orbstack.dev/machines/distros
+## Getting started
 
-1. Place setup/wsl/configuration.nix file provided into your /etc/nixos/configuration.nix directory
-1. Rebuild the NixOS with new configuration: <code>sudo nixos-rebuild switch</code>
-1. Kubernetes K3s configuration file can be found at /etc/rancher/k3s/k3s.yaml , and should be placed on your client machine/host under ~/.kube/config to gain access to newly created cluster
+Install [Bun](https://bun.sh), then run:
 
+```sh
+bun install
+bun run dev:agent-core
+```
 
-## Setting up additional nodes
+The local services bind to loopback by default. `agent-core` uses port `3000`, `inference-service` uses `3001`, and `memory-service` uses `3002`; each exposes a `/health` endpoint.
 
-Merka supports large variety of nodes and endpoints, and all bring something unique to expand the ecosystem sometimes beyond your expectations.
+## Desktop app
 
-## Experimental Steps
+The Tauri 2 desktop app requires Bun, a Rust toolchain, and the platform prerequisites listed in the [Tauri prerequisites guide](https://v2.tauri.app/start/prerequisites/). From the repository root, run:
 
-1. Enable persistent storage on your K3s cluster using 
-1. Install Portainer using Helm on your K3s cluster: https://github.com/portainer/k8s/blob/master/charts/portainer/README.md
-1. Install Rancher using Helm on your K3s cluster:
-1. Connect Neon DB helm chart repo: helm repo add neondatabase https://neondatabase.github.io/helm-charts
-1. Install Neon DB various charts: helm search repo neondatabase
+```sh
+bun run dev:desktop
+```
 
+Build a native app bundle with `bun run build:desktop`. This scaffolds the desktop shell and UI only; it does not yet install, configure, start, or update Bun services.
 
-### CloudNativePG
-
-1. We will need to install CloudNativePG operator first, using helm: 
-helm repo add cnpg https://cloudnative-pg.github.io/charts
-helm upgrade --install cnpg \
-  --namespace cnpg-system \
-  --create-namespace \
-  cnpg/cloudnative-pg
-
-1. Next lets create dedicated Namespace for CloudNativePG databases and make it default by running: kubectl create namespace cnpg && kubectl config set-context --current --namespace=cnpg
-1. Finally deploy /setup/cloudnative-pg/cloudnative-pg.yaml to your K3s cluster using: kubectl apply -f cloudnative-pg.yaml
-
-
-### Portainer
-
-helm upgrade --install --create-namespace -n portainer portainer portainer/portainer \
-    --set tls.force=false \
-    --set image.tag=sts
-
-helm ls --all-namespaces
-
-### NeonDB
-
-1. Install another Nix WSL or VM, based on setup/neon-db/configuration.nix file
-1. Login to NeonDB VM and execute the following:
-
-#### Note: The path to the neon sources can not contain a space.
-
-git clone --recursive https://github.com/neondatabase/neon.git
-cd neon
-
-# The preferred and default is to make a debug build. This will create a demonstrably slower build than a release build.
-# For a release build, use "BUILD_TYPE=release make -j`nproc` -s"
-# Remove -s for the verbose build log
-
-make -j`nproc` -s
+See each module's README for its current scope. The previous infrastructure guide is preserved at [`docs/archive/legacy-infrastructure.md`](docs/archive/legacy-infrastructure.md).

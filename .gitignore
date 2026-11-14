@@ -171,3 +171,17 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# macOS
+.DS_Store
+
+# JavaScript / Bun workspaces
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# App tooling
+.expo/
+.wrangler/
+.dev.vars
